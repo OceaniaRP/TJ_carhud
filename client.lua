@@ -63,10 +63,9 @@ Citizen.CreateThread(function()
 
         if InCar then
             local vehicleClass =  GetVehicleClass(vehicle)
-            local vehicle = GetVehiclePedIsIn(ped, false)
             local driver = GetPedInVehicleSeat(vehicle, -1)
 
-            if driver == ped and IsVehicleOnAllWheels(vehicle) then
+            if driver == player and IsVehicleOnAllWheels(vehicle) then
 			
 				local GetHandlingfInitialDragCoeff = GetVehicleHandlingFloat(vehicle, "CHandlingData", "fInitialDragCoeff")
 			
@@ -123,15 +122,6 @@ function DriftOff()
         SetVehicleEnginePowerMultiplier(vehicle, 0.0)					
         SetVehicleModKit(vehicle, 0)
         SetVehicleMod(vehicle, 11, currentEngineMod, true) 
-        print(GetVehicleHandlingFloat(vehicle, "CHandlingData", "fInitialDragCoeff"))
-        print(GetVehicleHandlingFloat(vehicle, "CHandlingData", 'fDriveInertia'))
-        print(GetVehicleHandlingFloat(vehicle, "CHandlingData", "fSteeringLock"))
-        print(GetVehicleHandlingFloat(vehicle, "CHandlingData", "fTractionCurveMax"))
-        print(GetVehicleHandlingFloat(vehicle, "CHandlingData", "fTractionCurveMin"))
-        print(GetVehicleHandlingFloat(vehicle, "CHandlingData", "fTractionCurveLateral"))
-        print(GetVehicleHandlingFloat(vehicle, "CHandlingData", "fLowSpeedTractionLossMult"))
-    
-
 end
 
 function DriftOn()
@@ -163,13 +153,6 @@ function DriftOn()
         SetVehicleHandlingFloat(vehicle, 'CHandlingData', 'fTractionCurveMin', addTofTractionCurveMin)
         SetVehicleHandlingFloat(vehicle, 'CHandlingData', 'fTractionCurveLateral', addTofTractionCurveLateral)
         SetVehicleHandlingFloat(vehicle, 'CHandlingData', 'fLowSpeedTractionLossMult', addTofLowSpeedTractionLossMult)
-        print(GetVehicleHandlingFloat(vehicle, "CHandlingData", "fInitialDragCoeff"))
-        print(GetVehicleHandlingFloat(vehicle, "CHandlingData", 'fDriveInertia'))
-        print(GetVehicleHandlingFloat(vehicle, "CHandlingData", "fSteeringLock"))
-        print(GetVehicleHandlingFloat(vehicle, "CHandlingData", "fTractionCurveMax"))
-        print(GetVehicleHandlingFloat(vehicle, "CHandlingData", "fTractionCurveMin"))
-        print(GetVehicleHandlingFloat(vehicle, "CHandlingData", "fTractionCurveLateral"))
-        print(GetVehicleHandlingFloat(vehicle, "CHandlingData", "fLowSpeedTractionLossMult"))
 end
 
 
