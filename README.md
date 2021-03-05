@@ -9,4 +9,10 @@ aim is to have the following included into the scripts as well as a ui for icons
  - compass
  - speedometer
  - seatbelt (With ragdoll effect if they arent wearing one)
- - cruis control (with icon)
+ - cruise control (with icon)
+ - easy butttons to control indacating in the car (Utilise up, down, left, and right?)
+ - change minimap to round?
+
+
+
+Eventally add aircraft mode as well
