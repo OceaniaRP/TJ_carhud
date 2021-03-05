@@ -25,7 +25,14 @@ local Keys = {
 }
 
 --Global
-local InCar = false
+local InVehicle = false
+
+ --What type of vehicle is it
+local isacar = false
+local isabike = false
+local isaircraft = false
+local candrift = false -- Used for if the vehicle can go into drift mode
+local isaboat = false
 
 -- Main thread
 Citizen.CreateThread(function()
@@ -37,6 +44,22 @@ Citizen.CreateThread(function()
     local seatbeltIsOn = false
     local driftIsOn = false
 
+
+    -- Is the vehicle your in capable of drift mode
+    while true do
+        Citizen.Wait(0)
+        local vehicle = GetVehiclePedIsIn(GetPlayerPed(-1), false)
+        local vehicleClass = GetVehicleClass(vehicle)
+
+        if vehicleClass >= 0 and <= 7 or  vehicleClass >= 8 and <= 9  then
+            candrift = true
+        else   
+            candrift = false
+        end
+    end
+
+
+
     while true do
          -- Get player PED, position and vehicle and save to locals
         local player = GetPlayerPed(-1)
@@ -46,11 +69,11 @@ Citizen.CreateThread(function()
 
 
         if IsPedInAnyVehicle(player, false) then
-             InCar = true
-             timer = 0
+            InVehicle = true
+            timer = 0
         else
             -- Reset states when not in car
-            InCar = false
+            InVehicle = false
             cruiseIsOn = false
             seatbeltIsOn = false
             driftIsOn = false
@@ -66,11 +89,8 @@ Citizen.CreateThread(function()
             local driver = GetPedInVehicleSeat(vehicle, -1)
 
             if driver == player and IsVehicleOnAllWheels(vehicle) then
-			
 				local GetHandlingfInitialDragCoeff = GetVehicleHandlingFloat(vehicle, "CHandlingData", "fInitialDragCoeff")
-			
-				if IsControlJustReleased(0, Keys[Config.vehicle.keys.drift])) and ((GetVehicleClass(vehicle) == 0) or (GetVehicleClass(vehicle) == 1) or (GetVehicleClass(vehicle) == 2) or (GetVehicleClass(vehicle) == 3) or (GetVehicleClass(vehicle) == 4) or (GetVehicleClass(vehicle) == 5) or (GetVehicleClass(vehicle) == 6) or (GetVehicleClass(vehicle) == 7) or (GetVehicleClass(vehicle) == 9)) then
-			
+				if IsControlJustReleased(0, Keys[Config.vehicle.keys.drift])) and candrift then
 					if GetHandlingfInitialDragCoeff >= 50.0 then
 						driftIsOn = false
 					else
@@ -86,10 +106,7 @@ Citizen.CreateThread(function()
 				end	
 			end
         
-
         end
-
-
 
     end
 end)
@@ -122,6 +139,7 @@ function DriftOff()
         SetVehicleEnginePowerMultiplier(vehicle, 0.0)					
         SetVehicleModKit(vehicle, 0)
         SetVehicleMod(vehicle, 11, currentEngineMod, true) 
+        print('Drift is now off')
 end
 
 function DriftOn()
@@ -153,6 +171,7 @@ function DriftOn()
         SetVehicleHandlingFloat(vehicle, 'CHandlingData', 'fTractionCurveMin', addTofTractionCurveMin)
         SetVehicleHandlingFloat(vehicle, 'CHandlingData', 'fTractionCurveLateral', addTofTractionCurveLateral)
         SetVehicleHandlingFloat(vehicle, 'CHandlingData', 'fLowSpeedTractionLossMult', addTofLowSpeedTractionLossMult)
+        print('Drifton')
 end
 
 
