@@ -30,6 +30,8 @@ local DriftKey      = 36 -- Left Control
 
 --Global
 local InVehicle = false
+local locationText = ""
+local currentFuel = 0.0
 
  --What type of vehicle is it
 local isacar = false
@@ -89,10 +91,10 @@ Citizen.CreateThread(function()
 
         -- Update HUD Every frame, change wait to 1000 if not in car
         if InVehicle then
-            -- print('incar')
             local vehicleClass =  GetVehicleClass(vehicle)
             local driver = GetPedInVehicleSeat(vehicle, -1)
 
+            -- Drift Mode
             if driver == player and IsVehicleOnAllWheels(vehicle) then
 				local GetHandlingfInitialDragCoeff = GetVehicleHandlingFloat(vehicle, "CHandlingData", "fInitialDragCoeff")
 				if IsControlJustReleased(0, DriftKey) and candrift then
@@ -110,6 +112,60 @@ Citizen.CreateThread(function()
 				end	
 			end
         
+            if pedInVeh and GetIsVehicleEngineRunning(vehicle) and vehicleClass ~= 13 then
+                -- Save previous speed and get current speed
+                local prevSpeed = currSpeed
+                currSpeed = GetEntitySpeed(vehicle)
+
+                -- Set PED flags
+                SetPedConfigFlag(PlayerPedId(), 32, true)
+                
+                -- Check if seatbelt button pressed, toggle state and handle seatbelt logic
+                if IsControlJustReleased(0, SeatbeltKey) and and vehicleClass ~= 8 then
+                    -- Toggle seatbelt status and play sound when enabled
+                    seatbeltIsOn = not seatbeltIsOn
+                end
+                if not seatbeltIsOn then
+                    -- Eject PED when moving forward, vehicle was going over 45 MPH and acceleration over 100 G's
+                    local vehIsMovingFwd = GetEntitySpeedVector(vehicle, true).y > 1.0
+                    local vehAcc = (prevSpeed - currSpeed) / GetFrameTime()
+                    if (vehIsMovingFwd and (prevSpeed > (seatbeltEjectSpeed/2.237)) and (vehAcc > (seatbeltEjectAccel*9.81))) then
+                        SetEntityCoords(player, position.x, position.y, position.z - 0.47, true, true, true)
+                        SetEntityVelocity(player, prevVelocity.x, prevVelocity.y, prevVelocity.z)
+                        Citizen.Wait(1)
+                        SetPedToRagdoll(player, 1000, 1000, 0, 0, 0, 0)
+                    else
+                        -- Update previous velocity for ejecting player
+                        prevVelocity = GetEntityVelocity(vehicle)
+                    end
+                elseif seatbeltIsOn then
+                    -- Disable vehicle exit when seatbelt is on
+                    DisableControlAction(0, 75)
+                end
+
+                -- When player in driver seat, handle cruise control
+                if driver == player then
+                    -- Check if cruise control button pressed, toggle state and set maximum speed appropriately
+                    if IsControlJustReleased(0, CruiseKey) then
+                        cruiseIsOn = not cruiseIsOn
+                        cruiseSpeed = currSpeed
+                    end
+                    local maxSpeed = cruiseIsOn and cruiseSpeed or GetVehicleHandlingFloat(vehicle,"CHandlingData","fInitialDriveMaxFlatVel")
+                    SetEntityMaxSpeed(vehicle, maxSpeed)
+                else
+                    -- Reset cruise control
+                    cruiseIsOn = false
+                end
+
+                -- Check what units should be used for speed
+                if ShouldUseMetricMeasurements() then
+                    -- Get vehicle speed in KPH and draw speedometer
+                    local speed = currSpeed*3.6
+                else
+                    -- Get vehicle speed in MPH and draw speedometer
+                    local speed = currSpeed*2.23694
+                end
+
         end
 
     end
