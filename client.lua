@@ -34,6 +34,22 @@ local isaircraft = false
 local candrift = false -- Used for if the vehicle can go into drift mode
 local isaboat = false
 
+
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(100)
+        local vehicle = GetVehiclePedIsIn(GetPlayerPed(-1), false)
+        local vehicleClass = GetVehicleClass(vehicle)
+
+        if vehicleClass >= 0 and vehicleClass <= 7 or vehicleClass == 9 then
+            candrift = true
+        else   
+            candrift = false
+        end
+    end
+
+end)
+
 -- Main thread
 Citizen.CreateThread(function()
     -- Initialize local variable
@@ -48,25 +64,13 @@ Citizen.CreateThread(function()
     -- Is the vehicle your in capable of drift mode
     while true do
         Citizen.Wait(0)
-        local vehicle = GetVehiclePedIsIn(GetPlayerPed(-1), false)
-        local vehicleClass = GetVehicleClass(vehicle)
 
-        if vehicleClass >= 0 and <= 7 or  vehicleClass >= 8 and <= 9  then
-            candrift = true
-        else   
-            candrift = false
-        end
-    end
-
-
-
-    while true do
          -- Get player PED, position and vehicle and save to locals
         local player = GetPlayerPed(-1)
         local position = GetEntityCoords(player)
         local vehicle = GetVehiclePedIsIn(player, false)
         local timer = nil
-
+        
 
         if IsPedInAnyVehicle(player, false) then
             InVehicle = true
@@ -76,31 +80,22 @@ Citizen.CreateThread(function()
             InVehicle = false
             cruiseIsOn = false
             seatbeltIsOn = false
-            driftIsOn = false
             timer = 1000
         end
 
         -- Update HUD Every frame, change wait to 1000 if not in car
-        Citizen.Wait(timer)
-
-
-        if InCar then
+        if InVehicle then
+            -- print('incar')
             local vehicleClass =  GetVehicleClass(vehicle)
             local driver = GetPedInVehicleSeat(vehicle, -1)
 
             if driver == player and IsVehicleOnAllWheels(vehicle) then
 				local GetHandlingfInitialDragCoeff = GetVehicleHandlingFloat(vehicle, "CHandlingData", "fInitialDragCoeff")
-				if IsControlJustReleased(0, Keys[Config.vehicle.keys.drift])) and candrift then
+				if IsControlJustReleased(0, 36) and candrift then -- left control
 					if GetHandlingfInitialDragCoeff >= 50.0 then
-						driftIsOn = false
+                        DriftOff()
 					else
-						driftIsOn = true
-					end
-
-                    if driftIsOn then
                         DriftOn()
-					else
-						DriftOff()
 					end
 				
 				end	
@@ -173,7 +168,3 @@ function DriftOn()
         SetVehicleHandlingFloat(vehicle, 'CHandlingData', 'fLowSpeedTractionLossMult', addTofLowSpeedTractionLossMult)
         print('Drifton')
 end
-
-
-
-
