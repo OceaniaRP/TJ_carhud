@@ -112,7 +112,7 @@ Citizen.CreateThread(function()
 				end	
 			end
         
-            if pedInVeh and GetIsVehicleEngineRunning(vehicle) and vehicleClass ~= 13 then
+            if InVehicle and GetIsVehicleEngineRunning(vehicle) and vehicleClass ~= 13 then
                 -- Save previous speed and get current speed
                 local prevSpeed = currSpeed
                 currSpeed = GetEntitySpeed(vehicle)
@@ -121,7 +121,7 @@ Citizen.CreateThread(function()
                 SetPedConfigFlag(PlayerPedId(), 32, true)
                 
                 -- Check if seatbelt button pressed, toggle state and handle seatbelt logic
-                if IsControlJustReleased(0, SeatbeltKey) and and vehicleClass ~= 8 then
+                if IsControlJustReleased(0, SeatbeltKey) and vehicleClass ~= 8 then
                     -- Toggle seatbelt status and play sound when enabled
                     seatbeltIsOn = not seatbeltIsOn
                 end
@@ -129,7 +129,7 @@ Citizen.CreateThread(function()
                     -- Eject PED when moving forward, vehicle was going over 45 MPH and acceleration over 100 G's
                     local vehIsMovingFwd = GetEntitySpeedVector(vehicle, true).y > 1.0
                     local vehAcc = (prevSpeed - currSpeed) / GetFrameTime()
-                    if (vehIsMovingFwd and (prevSpeed > (seatbeltEjectSpeed/2.237)) and (vehAcc > (seatbeltEjectAccel*9.81))) then
+                    if vehIsMovingFwd and (prevSpeed > (45.0 /2.237)) and (vehAcc > (100*9.81)) then
                         SetEntityCoords(player, position.x, position.y, position.z - 0.47, true, true, true)
                         SetEntityVelocity(player, prevVelocity.x, prevVelocity.y, prevVelocity.z)
                         Citizen.Wait(1)
@@ -146,12 +146,27 @@ Citizen.CreateThread(function()
                 -- When player in driver seat, handle cruise control
                 if driver == player then
                     -- Check if cruise control button pressed, toggle state and set maximum speed appropriately
-                    if IsControlJustReleased(0, CruiseKey) then
+                    if IsControlJustReleased(0, CruiseKey) and  not cruiseIsOn then
                         cruiseIsOn = not cruiseIsOn
-                        cruiseSpeed = currSpeed
+                        -- ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'speedlimit', { --NOT WORKING
+                        --     title = 'speed limit'
+                        -- }, function(data, menu)
+                        --     menu.close()
+
+                        --     cruiseSpeed = data.value
+
+                        --     local maxSpeed = cruiseIsOn and cruiseSpeed or GetVehicleHandlingFloat(vehicle,"CHandlingData","fInitialDriveMaxFlatVel")
+                        --     SetEntityMaxSpeed(vehicle, maxSpeed)
+
+                        -- end, function(data, menu)
+                        --     menu.close()
+                        -- end)
+                    elseif IsControlJustReleased(0, CruiseKey) and cruiseIsOn then
+                        cruiseIsOn = not cruiseIsOn
+                        local maxSpeed = cruiseIsOn and cruiseSpeed or GetVehicleHandlingFloat(vehicle,"CHandlingData","fInitialDriveMaxFlatVel")
+                        SetEntityMaxSpeed(vehicle, maxSpeed)
+                      
                     end
-                    local maxSpeed = cruiseIsOn and cruiseSpeed or GetVehicleHandlingFloat(vehicle,"CHandlingData","fInitialDriveMaxFlatVel")
-                    SetEntityMaxSpeed(vehicle, maxSpeed)
                 else
                     -- Reset cruise control
                     cruiseIsOn = false
@@ -165,7 +180,7 @@ Citizen.CreateThread(function()
                     -- Get vehicle speed in MPH and draw speedometer
                     local speed = currSpeed*2.23694
                 end
-
+            end
         end
 
     end
