@@ -146,30 +146,36 @@ Citizen.CreateThread(function()
                 -- When player in driver seat, handle cruise control
                 if driver == player then
                     -- Check if cruise control button pressed, toggle state and set maximum speed appropriately
-                    if IsControlJustReleased(0, CruiseKey) and  not cruiseIsOn then
-                        cruiseIsOn = not cruiseIsOn
-                        -- ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'speedlimit', { --NOT WORKING
-                        --     title = 'speed limit'
-                        -- }, function(data, menu)
-                        --     menu.close()
+                    if IsControlJustReleased(0, CruiseKey) and cruiseIsOn == false then
+                        --cruiseIsOn = true
+                        ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'speedlimit', {
+                            title = 'speed limit'
+                        }, function(data, menu)
+                            menu.close()
+                            cruiseIsOn = true
+                            cruiseSpeed = data.value /3.6
 
-                        --     cruiseSpeed = data.value
+                            local maxSpeed = cruiseIsOn and cruiseSpeed
+                            SetEntityMaxSpeed(vehicle, maxSpeed)
+                            print(cruiseSpeed)
+                            print(maxSpeed)
 
-                        --     local maxSpeed = cruiseIsOn and cruiseSpeed or GetVehicleHandlingFloat(vehicle,"CHandlingData","fInitialDriveMaxFlatVel")
-                        --     SetEntityMaxSpeed(vehicle, maxSpeed)
+                        end, function(data, menu)
+                            menu.close()
+                        end)
 
-                        -- end, function(data, menu)
-                        --     menu.close()
-                        -- end)
                     elseif IsControlJustReleased(0, CruiseKey) and cruiseIsOn then
-                        cruiseIsOn = not cruiseIsOn
-                        local maxSpeed = cruiseIsOn and cruiseSpeed or GetVehicleHandlingFloat(vehicle,"CHandlingData","fInitialDriveMaxFlatVel")
+                        cruiseIsOn = false
+                        local maxSpeed = GetVehicleHandlingFloat(vehicle,"CHandlingData","fInitialDriveMaxFlatVel")
                         SetEntityMaxSpeed(vehicle, maxSpeed)
+                        print(cruiseSpeed)
+                        cruiseSpeed = nil
                       
                     end
                 else
                     -- Reset cruise control
                     cruiseIsOn = false
+                    cruiseSpeed = 999.0
                 end
 
                 -- Check what units should be used for speed
