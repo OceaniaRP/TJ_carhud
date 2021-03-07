@@ -106,7 +106,7 @@ Citizen.CreateThread(function()
                         driftIsOn = true
 					end
 
-                elseif  driver ~= player and driftIsOn then
+                elseif  IsControlJustReleased(0, 23) and driftIsOn then
                     DriftOff()
                     driftIsOn = false
 				end	
@@ -176,8 +176,6 @@ Citizen.CreateThread(function()
                     -- Reset cruise control
                     cruiseIsOn = false
                     cruiseSpeed = 999.0
-                    local maxSpeed = GetVehicleHandlingFloat(vehicle,"CHandlingData","fInitialDriveMaxFlatVel")
-                    SetEntityMaxSpeed(vehicle, maxSpeed)
                 end
 
                 -- Check what units should be used for speed
